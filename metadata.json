@@ -1,0 +1,6 @@
+{
+  "name": "ForensIQ",
+  "description": "AI-Powered Cybercrime Investigation & Digital Forensics Platform",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

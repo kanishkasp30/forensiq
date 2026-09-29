@@ -167,10 +167,10 @@ export const CaseInvestigationModal: React.FC<CaseInvestigationModalProps> = ({
                   Financial & Transaction Traces
                 </h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs font-mono">
-                  {caseItem.financialDetails.amountLost && (
+                  {caseItem.financialDetails.lossAmount && (
                     <div className="p-2.5 rounded-lg bg-slate-900 border border-slate-800">
                       <span className="text-slate-500 block text-[10px]">Total Loss</span>
-                      <span className="text-red-400 font-bold text-sm">${caseItem.financialDetails.amountLost.toLocaleString()}</span>
+                      <span className="text-red-400 font-bold text-sm">₹{caseItem.financialDetails.lossAmount.toLocaleString('en-IN')}</span>
                     </div>
                   )}
                   {caseItem.financialDetails.paymentMethod && (

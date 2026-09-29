@@ -22,6 +22,7 @@ export const AIEvidenceModal: React.FC<AIEvidenceModalProps> = ({
   const [title, setTitle] = useState('Evidence Artifact Scan');
   const [loading, setLoading] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<any>(null);
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
   const handleRunScan = async (e: React.FormEvent) => {
@@ -30,10 +31,18 @@ export const AIEvidenceModal: React.FC<AIEvidenceModalProps> = ({
 
     setLoading(true);
     setAnalysisResult(null);
+    setAnalysisError(null);
 
-    const result = await analyzeEvidenceAI(content, type, title);
-    setAnalysisResult(result);
-    setLoading(false);
+    try {
+      const result = await analyzeEvidenceAI(content, type, title);
+      setAnalysisResult(result);
+    } catch (error: any) {
+      setAnalysisError(
+        error?.message || 'AI analysis failed. Please try again.'
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   const copyResults = () => {
@@ -113,6 +122,15 @@ export const AIEvidenceModal: React.FC<AIEvidenceModalProps> = ({
             )}
           </button>
         </form>
+
+        {/* Error display */}
+        {analysisError && (
+          <div className="p-4 rounded-xl bg-red-950/30 border border-red-500/30 text-center space-y-2">
+            <AlertTriangle className="w-6 h-6 text-red-400 mx-auto" />
+            <p className="text-sm text-red-300 font-semibold">Analysis Failed</p>
+            <p className="text-xs text-slate-400 font-mono">{analysisError}</p>
+          </div>
+        )}
 
         {/* Results display */}
         {analysisResult && (

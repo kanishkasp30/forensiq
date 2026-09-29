@@ -535,11 +535,14 @@ function buildCaseResponse(
       ),
 
     evidenceFiles:
-      row.evidence_files ||
-      [],
+      Array.isArray(row.evidence_files)
+        ? row.evidence_files
+        : [],
 
     timeline:
-      row.timeline || [],
+      Array.isArray(row.timeline)
+        ? row.timeline
+        : [],
 
     aiAnalysis:
       row.ai_analysis,
@@ -548,7 +551,9 @@ function buildCaseResponse(
       row.suspect_info,
 
     comments:
-      row.comments || [],
+      Array.isArray(row.comments)
+        ? row.comments
+        : [],
   };
 }
 
@@ -1630,6 +1635,41 @@ app.post(
           normalizedLossAmount
         );
 
+      // Embed JSONB payloads directly in the SQL text using Postgres
+      // dollar-quoting instead of bind parameters. This sidesteps an
+      // intermittent driver-level parameter corruption bug we observed
+      // specifically when evidence files were attached (case creation
+      // succeeded with empty evidenceFiles but failed once evidence was
+      // present, even though the JSON itself was verified valid).
+      const financialDetailsJson = JSON.stringify(normalizedFinancialDetails);
+      const evidenceFilesJson = JSON.stringify(evidenceFiles || []);
+      const timelineJson = JSON.stringify(timeline || []);
+      const aiAnalysisJson = JSON.stringify(aiAnalysis || null);
+      const suspectInfoJson = JSON.stringify(suspectInfo || null);
+      const commentsJson = JSON.stringify(comments || []);
+
+      // Sanity-check each payload is valid JSON before it ever touches SQL
+      for (const [label, json] of [
+        ['financial_details', financialDetailsJson],
+        ['evidence_files', evidenceFilesJson],
+        ['timeline', timelineJson],
+        ['ai_analysis', aiAnalysisJson],
+        ['suspect_info', suspectInfoJson],
+        ['comments', commentsJson],
+      ] as const) {
+        try {
+          JSON.parse(json);
+        } catch (parseErr) {
+          console.error(`Invalid JSON built for ${label}:`, parseErr, json);
+          return res.status(500).json({
+            success: false,
+            error: `Internal error building ${label} payload.`,
+          });
+        }
+      }
+
+      const tag = `json${Date.now()}`;
+
       const result =
         await pool.query(
           `
@@ -1659,8 +1699,13 @@ app.post(
           VALUES (
             $1, $2, $3, $4, $5,
             $6, $7, $8, $9, $10,
-            $11, $12, $13, $14, $15,
-            $16, $17, $18, $19, $20, $21
+            $11, $12, $13, $14, $${tag}$${financialDetailsJson}$${tag}$::jsonb,
+            $${tag}$${evidenceFilesJson}$${tag}$::jsonb,
+            $${tag}$${timelineJson}$${tag}$::jsonb,
+            $${tag}$${aiAnalysisJson}$${tag}$::jsonb,
+            $${tag}$${suspectInfoJson}$${tag}$::jsonb,
+            $${tag}$${commentsJson}$${tag}$::jsonb,
+            $15
           )
           RETURNING *
           `,
@@ -1702,21 +1747,6 @@ app.post(
             description,
 
             normalizedLossAmount,
-
-            normalizedFinancialDetails,
-
-            evidenceFiles ||
-              [],
-
-            timeline || [],
-
-            aiAnalysis ||
-              null,
-
-            suspectInfo ||
-              null,
-
-            comments || [],
 
             req.user?.id ||
               null,
@@ -1817,7 +1847,7 @@ app.patch(
       const now = new Date().toISOString();
 
       const updatedTimeline = [
-        ...(existingCase.timeline || []),
+        ...(Array.isArray(existingCase.timeline) ? existingCase.timeline : []),
         {
           id: `tl-${crypto.randomUUID()}`,
           timestamp: now,
@@ -1831,7 +1861,7 @@ app.patch(
         },
       ];
 
-      let updatedComments = existingCase.comments || [];
+      let updatedComments = Array.isArray(existingCase.comments) ? existingCase.comments : [];
 
       if (commentText) {
         updatedComments = [
@@ -1931,12 +1961,12 @@ app.post(
       };
 
       const updatedEvidenceFiles = [
-        ...(existingCase.evidence_files || []),
+        ...(Array.isArray(existingCase.evidence_files) ? existingCase.evidence_files : []),
         evidenceItem,
       ];
 
       const updatedTimeline = [
-        ...(existingCase.timeline || []),
+        ...(Array.isArray(existingCase.timeline) ? existingCase.timeline : []),
         {
           id: `tl-${crypto.randomUUID()}`,
           timestamp: now,
@@ -2027,7 +2057,7 @@ app.post(
       };
 
       const updatedComments = [
-        ...(existingCase.comments || []),
+        ...(Array.isArray(existingCase.comments) ? existingCase.comments : []),
         newComment,
       ];
 
@@ -2093,7 +2123,7 @@ app.patch(
       const now = new Date().toISOString();
 
       const updatedTimeline = [
-        ...(existingCase.timeline || []),
+        ...(Array.isArray(existingCase.timeline) ? existingCase.timeline : []),
         {
           id: `tl-${crypto.randomUUID()}`,
           timestamp: now,
@@ -2180,7 +2210,7 @@ app.post(
       };
 
       const updatedTimeline = [
-        ...(existingCase.timeline || []),
+        ...(Array.isArray(existingCase.timeline) ? existingCase.timeline : []),
         newEvent,
       ];
 
@@ -2236,7 +2266,7 @@ app.patch(
 
       const existingCase = caseResult.rows[0];
 
-      const updatedTimeline = (existingCase.timeline || []).map(
+      const updatedTimeline = (Array.isArray(existingCase.timeline) ? existingCase.timeline : []).map(
         (event: any) =>
           event.id === req.params.eventId
             ? { ...event, ...updatedFields }
@@ -2293,7 +2323,7 @@ app.delete(
 
       const existingCase = caseResult.rows[0];
 
-      const updatedTimeline = (existingCase.timeline || []).filter(
+      const updatedTimeline = (Array.isArray(existingCase.timeline) ? existingCase.timeline : []).filter(
         (event: any) => event.id !== req.params.eventId
       );
 
@@ -2364,7 +2394,7 @@ app.post(
 
       const timestampedNote = `[${timestamp} - ${actorName}]: ${noteText.trim()}`;
 
-      const updatedTimeline = (existingCase.timeline || []).map(
+      const updatedTimeline = (Array.isArray(existingCase.timeline) ? existingCase.timeline : []).map(
         (event: any) => {
           if (event.id !== req.params.eventId) return event;
 
@@ -2450,7 +2480,7 @@ app.post(
         }),
       };
 
-      const updatedTimeline = (existingCase.timeline || []).map(
+      const updatedTimeline = (Array.isArray(existingCase.timeline) ? existingCase.timeline : []).map(
         (event: any) => {
           if (event.id !== req.params.eventId) return event;
 
@@ -2782,20 +2812,65 @@ recommendedActionForOfficer:
 The evidence hash supplied above is the authoritative SHA-256 hash generated by the server.
 `;
 
-      const response =
-        await ai.models.generateContent(
-          {
-            model:
-              "gemini-2.5-flash",
+      // Gemini's servers occasionally return 503 "UNAVAILABLE" (high
+      // demand). These are transient — retry a few times with backoff,
+      // and fall back to a second model if the primary keeps failing.
+      const modelsToTry = [
+        "gemini-flash-lite-latest",
+        "gemini-2.5-flash-lite",
+        "gemini-flash-latest",
+        "gemini-2.5-flash",
+      ];
 
-            contents: prompt,
+      let response: Awaited<ReturnType<typeof ai.models.generateContent>> | null = null;
+      let lastError: any = null;
 
-            config: {
-              responseMimeType:
-                "application/json",
-            },
+      outer:
+      for (const modelName of modelsToTry) {
+        for (let attempt = 0; attempt < 3; attempt++) {
+          try {
+            response = await ai.models.generateContent({
+              model: modelName,
+              contents: prompt,
+              config: {
+                responseMimeType: "application/json",
+              },
+            });
+            lastError = null;
+            break outer;
+          } catch (err: any) {
+            lastError = err;
+            const status =
+              err?.status ||
+              err?.error?.code;
+            const isRetryable =
+              status === 503 ||
+              status === 429 ||
+              status === "UNAVAILABLE";
+
+            if (!isRetryable) {
+              break outer;
+            }
+
+            // Exponential backoff: 500ms, 1000ms, 2000ms
+            await new Promise((resolve) =>
+              setTimeout(resolve, 500 * Math.pow(2, attempt))
+            );
           }
+        }
+      }
+
+      if (!response) {
+        console.error(
+          "AI Forensic Analysis Error (all retries/models failed):",
+          lastError
         );
+        return res.status(503).json({
+          success: false,
+          error:
+            "The Gemini AI service is currently experiencing high demand. Please try again in a moment.",
+        });
+      }
 
       const text =
         response.text?.trim();

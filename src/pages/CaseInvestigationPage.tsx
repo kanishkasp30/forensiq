@@ -5,7 +5,6 @@ import { CaseItem, EvidenceFile, CaseStatus, UrgencyLevel } from '../types';
 import { StatusBadge, UrgencyBadge, VerificationBadge } from '../components/StatusBadges';
 import { FileUpload } from '../components/FileUpload';
 import { OfficerTimeline } from '../components/officer/OfficerTimeline';
-import { OfficerSuspectNetwork } from '../components/officer/OfficerSuspectNetwork';
 import { CourtReportGenerator } from '../components/officer/CourtReportGenerator';
 import { 
   ShieldCheck, 
@@ -51,7 +50,7 @@ export const CaseInvestigationPage: React.FC = () => {
   // Find target case or fallback to first case if invalid ID
   const caseItem = cases.find(c => c.id === id) || cases[0];
 
-  const [activeTab, setActiveTab] = useState<'overview' | 'evidence' | 'ai_analysis' | 'timeline' | 'network' | 'related' | 'report'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'evidence' | 'ai_analysis' | 'timeline' | 'related' | 'report'>('overview');
   
   // State for Evidence tab search
   const [evidenceSearch, setEvidenceSearch] = useState('');
@@ -71,6 +70,7 @@ export const CaseInvestigationPage: React.FC = () => {
   // AI Analysis State
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [aiData, setAiData] = useState<any>(caseItem?.aiAnalysis || null);
+  const [aiAnalysisError, setAiAnalysisError] = useState<string | null>(null);
 
   // Court Report Generation State
   const [reportFormat, setReportFormat] = useState<'full' | 'subpoena' | 'custody'>('full');
@@ -119,13 +119,21 @@ export const CaseInvestigationPage: React.FC = () => {
   // Run AI Analysis handler
   const handleRunAiAnalysis = async () => {
     setIsAnalyzing(true);
-    const result = await analyzeEvidenceAI(
-      `${caseItem.title}\nCategory: ${caseItem.category}\nDescription: ${caseItem.description}\nLoss: $${caseItem.lossAmount || 0}`,
-      caseItem.category,
-      caseItem.id
-    );
-    setAiData(result);
-    setIsAnalyzing(false);
+    setAiAnalysisError(null);
+    try {
+      const result = await analyzeEvidenceAI(
+        `${caseItem.title}\nCategory: ${caseItem.category}\nDescription: ${caseItem.description}\nLoss: ₹${caseItem.lossAmount || 0}`,
+        caseItem.category,
+        caseItem.id
+      );
+      setAiData(result);
+    } catch (error: any) {
+      setAiAnalysisError(
+        error?.message || 'AI analysis failed. Please try again.'
+      );
+    } finally {
+      setIsAnalyzing(false);
+    }
   };
 
   // Extract Entities Helper
@@ -207,7 +215,7 @@ export const CaseInvestigationPage: React.FC = () => {
             <div className="flex justify-between items-center text-slate-400">
               <span>Financial Loss:</span>
               <span className="text-red-400 font-bold text-sm">
-                ${caseItem.lossAmount ? caseItem.lossAmount.toLocaleString() : '0'}
+                ₹{caseItem.lossAmount ? caseItem.lossAmount.toLocaleString('en-IN') : '0'}
               </span>
             </div>
             <div className="flex justify-between items-center text-slate-400">
@@ -274,18 +282,6 @@ export const CaseInvestigationPage: React.FC = () => {
         </button>
 
         <button
-          onClick={() => setActiveTab('network')}
-          className={`px-5 py-3 rounded-lg transition-all cursor-pointer flex items-center gap-2 whitespace-nowrap ${
-            activeTab === 'network'
-              ? 'bg-rose-600/20 text-rose-300 border border-rose-500/40 font-bold'
-              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
-          }`}
-        >
-          <Users className="w-4 h-4 text-rose-400" />
-          <span>Suspect Network</span>
-        </button>
-
-        <button
           onClick={() => setActiveTab('related')}
           className={`px-5 py-3 rounded-lg transition-all cursor-pointer flex items-center gap-2 whitespace-nowrap ${
             activeTab === 'related'
@@ -334,8 +330,7 @@ export const CaseInvestigationPage: React.FC = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs font-mono">
                   <div className="p-3 bg-slate-950 rounded-lg border border-slate-800">
                     <span className="text-slate-500 block text-[10px]">Total Stolen Loss</span>
-                    <span className="text-red-400 font-bold text-base">${caseItem.lossAmount.toLocaleString()}</span>
-                  </div>
+<span className="text-red-400 font-bold text-base">₹{caseItem.lossAmount.toLocaleString('en-IN')}</span>                  </div>
                   <div className="p-3 bg-slate-950 rounded-lg border border-slate-800">
                     <span className="text-slate-500 block text-[10px]">Payment Method</span>
                     <span className="text-slate-200 font-bold">{caseItem.financialDetails?.paymentMethod || 'Cryptocurrency (USDT/ETH)'}</span>
@@ -765,6 +760,18 @@ export const CaseInvestigationPage: React.FC = () => {
                 </div>
 
               </div>
+            ) : aiAnalysisError ? (
+              <div className="p-6 text-center border border-red-500/30 bg-red-950/20 rounded-xl space-y-3">
+                <AlertTriangle className="w-8 h-8 text-red-400 mx-auto" />
+                <p className="text-sm text-red-300 font-semibold">AI Analysis Failed</p>
+                <p className="text-xs text-slate-400 font-mono">{aiAnalysisError}</p>
+                <button
+                  onClick={handleRunAiAnalysis}
+                  className="mt-2 px-4 py-2 bg-red-600 hover:bg-red-500 text-white text-xs font-bold rounded-lg cursor-pointer"
+                >
+                  Retry Analysis
+                </button>
+              </div>
             ) : (
               <div className="p-8 text-center text-slate-500 font-mono text-xs border border-dashed border-slate-800 rounded-xl">
                 Click "Re-Run AI Forensic Scan" above to initiate Gemini model analysis.
@@ -779,13 +786,6 @@ export const CaseInvestigationPage: React.FC = () => {
       {activeTab === 'timeline' && (
         <div className="space-y-6">
           <OfficerTimeline />
-        </div>
-      )}
-
-      {/* TAB: SUSPECT NETWORK */}
-      {activeTab === 'network' && (
-        <div className="space-y-6">
-          <OfficerSuspectNetwork />
         </div>
       )}
 

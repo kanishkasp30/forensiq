@@ -32,7 +32,7 @@ export const LandingPage: React.FC = () => {
    * /login?role=admin
    */
   const goToLogin = (
-    role?: 'victim' | 'officer' | 'admin'
+    role?: 'victim' | 'officer'
   ) => {
     if (role) {
       navigate(`/login?role=${role}`);
@@ -148,10 +148,10 @@ export const LandingPage: React.FC = () => {
           </h1>
 
           <p className="text-slate-400 text-base sm:text-lg max-w-2xl mx-auto leading-relaxed">
-            ForensIQ connects citizens, cybercrime investigators,
-            and administrators through a secure case-management
-            platform for incident reporting, digital evidence
-            management, investigation workflows, and forensic analysis.
+            ForensIQ connects citizens and cybercrime investigators
+            through a secure case-management platform for incident
+            reporting, digital evidence management, investigation
+            workflows, and forensic analysis.
           </p>
 
           {/* Authentication Actions */}
@@ -181,16 +181,7 @@ export const LandingPage: React.FC = () => {
               </span>
             </button>
 
-            <button
-              onClick={() => goToLogin('admin')}
-              className="px-6 py-3.5 rounded-xl bg-slate-950 hover:bg-slate-900 text-slate-300 hover:text-white text-sm font-semibold border border-slate-800 flex items-center gap-2 cursor-pointer"
-            >
-              <Cpu className="w-4 h-4 text-purple-400" />
-
-              <span>
-                Administrator Login
-              </span>
-            </button>
+          
 
           </div>
 
@@ -369,7 +360,7 @@ export const LandingPage: React.FC = () => {
 
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
 
           {/* Citizen */}
           <div className="p-6 rounded-2xl bg-slate-900/80 border border-indigo-500/30 hover:border-indigo-500/60 transition-all space-y-4 shadow-xl relative overflow-hidden group">
@@ -474,57 +465,7 @@ export const LandingPage: React.FC = () => {
 
           </div>
 
-          {/* Admin */}
-          <div className="p-6 rounded-2xl bg-slate-900/80 border border-purple-500/30 hover:border-purple-500/60 transition-all space-y-4 shadow-xl relative overflow-hidden group">
-
-            <div className="p-3 w-12 h-12 rounded-xl bg-purple-950/80 text-purple-400 border border-purple-500/40 flex items-center justify-center">
-              <Cpu className="w-6 h-6" />
-            </div>
-
-            <div>
-              <span className="text-xs font-mono text-purple-400 uppercase font-bold">
-                Administrator
-              </span>
-
-              <h3 className="text-xl font-bold text-white mt-1">
-                Platform Management
-              </h3>
-            </div>
-
-            <p className="text-xs text-slate-400 leading-relaxed">
-              Manage platform users, investigate system activity,
-              control access, and monitor security operations.
-            </p>
-
-            <ul className="space-y-2 text-xs text-slate-300 pt-2 border-t border-slate-800">
-
-              <li className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-purple-400" />
-                <span>User Management</span>
-              </li>
-
-              <li className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-purple-400" />
-                <span>Role-Based Access Control</span>
-              </li>
-
-              <li className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-purple-400" />
-                <span>Security Audit Logs</span>
-              </li>
-
-            </ul>
-
-            <button
-              onClick={() => goToLogin('admin')}
-              className="w-full py-2.5 bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs rounded-xl transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer mt-4"
-            >
-              <span>Administrator Login</span>
-              <ChevronRight className="w-4 h-4" />
-            </button>
-
-          </div>
-
+          
         </div>
       </section>
 
@@ -632,12 +573,7 @@ export const LandingPage: React.FC = () => {
               Portal Login
             </button>
 
-            <button
-              onClick={() => navigate('/roles')}
-              className="hover:text-cyan-400"
-            >
-              Role Matrix
-            </button>
+            
 
             <span>
               Secure Role-Based Access

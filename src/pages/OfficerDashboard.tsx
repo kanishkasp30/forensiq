@@ -6,7 +6,6 @@ import { OfficerCases } from '../components/officer/OfficerCases';
 import { OfficerEvidenceVault } from '../components/officer/OfficerEvidenceVault';
 import { OfficerAIAnalysis } from '../components/officer/OfficerAIAnalysis';
 import { OfficerTimeline } from '../components/officer/OfficerTimeline';
-import { OfficerSuspectNetwork } from '../components/officer/OfficerSuspectNetwork';
 import { OfficerReports } from '../components/officer/OfficerReports';
 import { OfficerNotifications } from '../components/officer/OfficerNotifications';
 import { OfficerProfile } from '../components/officer/OfficerProfile';
@@ -40,9 +39,6 @@ export const OfficerDashboard: React.FC = () => {
     }
     if (pathname === '/officer/timeline') {
       return <OfficerTimeline />;
-    }
-    if (pathname === '/officer/suspects') {
-      return <OfficerSuspectNetwork />;
     }
     if (pathname === '/officer/reports') {
       return <OfficerReports />;

@@ -378,7 +378,7 @@ export const RegisterPage: React.FC =
               Select account type
             </p>
 
-            <div className="grid grid-cols-3 gap-2 p-1 bg-slate-950 rounded-xl border border-slate-800">
+            <div className="grid grid-cols-2 gap-2 p-1 bg-slate-950 rounded-xl border border-slate-800">
 
               {/* VICTIM */}
 
@@ -424,27 +424,7 @@ export const RegisterPage: React.FC =
                 </span>
               </button>
 
-              {/* ADMIN */}
-
-              <button
-                type="button"
-                onClick={() =>
-                  selectRole(
-                    'admin'
-                  )
-                }
-                className={`py-3 rounded-lg flex flex-col items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                  role === 'admin'
-                    ? 'bg-purple-600 text-white shadow-lg'
-                    : 'text-slate-400 hover:text-white hover:bg-slate-900'
-                }`}
-              >
-                <Cpu className="w-5 h-5" />
-
-                <span className="text-xs font-semibold">
-                  Administrator
-                </span>
-              </button>
+              
             </div>
           </div>
 
@@ -462,10 +442,7 @@ export const RegisterPage: React.FC =
               <ShieldCheck className="w-5 h-5 text-cyan-400 mt-0.5" />
             )}
 
-            {role === 'admin' && (
-              <Cpu className="w-5 h-5 text-purple-400 mt-0.5" />
-            )}
-
+            
             <div>
 
               <p className="text-xs font-bold text-white">
@@ -478,9 +455,7 @@ export const RegisterPage: React.FC =
                   'officer' &&
                   'Cybercrime Investigation Officer'}
 
-                {role ===
-                  'admin' &&
-                  'Portal Administrator'}
+                
               </p>
 
               <p className="text-[11px] text-slate-500 mt-0.5">
@@ -493,9 +468,7 @@ export const RegisterPage: React.FC =
                   'officer' &&
                   'Investigate assigned cases, verify evidence and manage forensic workflows.'}
 
-                {role ===
-                  'admin' &&
-                  'Manage officers, system permissions, audit logs and cybercrime operations.'}
+                
               </p>
 
             </div>

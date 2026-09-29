@@ -198,11 +198,11 @@ const normalizeCase = (row: any): CaseItem => {
     description: row.description ?? '',
     lossAmount: row.lossAmount !== undefined && row.lossAmount !== null ? Number(row.lossAmount) : undefined,
     financialDetails: row.financialDetails ?? row.financial_details ?? undefined,
-    evidenceFiles: row.evidenceFiles ?? row.evidence_files ?? [],
-    timeline: row.timeline ?? [],
+    evidenceFiles: Array.isArray(row.evidenceFiles ?? row.evidence_files) ? (row.evidenceFiles ?? row.evidence_files) : [],
+    timeline: Array.isArray(row.timeline) ? row.timeline : [],
     aiAnalysis: row.aiAnalysis ?? row.ai_analysis ?? undefined,
     suspectInfo: row.suspectInfo ?? row.suspect_info ?? undefined,
-    comments: row.comments ?? [],
+    comments: Array.isArray(row.comments) ? row.comments : [],
   };
 };
 

@@ -14,7 +14,7 @@ import {
   MessageSquare, 
   ShieldCheck, 
   UserCheck, 
-  DollarSign, 
+  IndianRupee, 
   Lock, 
   Send, 
   Sparkles, 
@@ -163,8 +163,7 @@ export const VictimCases: React.FC<VictimCasesProps> = ({ initialSelectedCase })
 
                     <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1 border-t border-slate-800/60">
                       <span>{c.category}</span>
-                      <span className="font-mono text-rose-400 font-bold">${(c.lossAmount || 0).toLocaleString()}</span>
-                    </div>
+<span className="font-mono text-rose-400 font-bold">₹{(c.lossAmount || 0).toLocaleString('en-IN')}</span>                    </div>
                   </div>
                 );
               })
@@ -201,8 +200,7 @@ export const VictimCases: React.FC<VictimCasesProps> = ({ initialSelectedCase })
                   </div>
                   <div className="p-2.5 rounded-lg bg-slate-900/60 border border-slate-800">
                     <span className="text-[10px] uppercase font-mono text-slate-500">Loss Amount</span>
-                    <div className="font-bold text-rose-400 font-mono mt-0.5">${(selectedCase.lossAmount || 0).toLocaleString()}</div>
-                  </div>
+<div className="font-bold text-rose-400 font-mono mt-0.5">₹{(selectedCase.lossAmount || 0).toLocaleString('en-IN')}</div>                  </div>
                   <div className="p-2.5 rounded-lg bg-slate-900/60 border border-slate-800">
                     <span className="text-[10px] uppercase font-mono text-slate-500">Vault Evidence</span>
                     <div className="font-bold text-emerald-400 font-mono mt-0.5">{selectedCase.evidenceFiles.length} files</div>
@@ -375,8 +373,7 @@ export const VictimCases: React.FC<VictimCasesProps> = ({ initialSelectedCase })
                   <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800 space-y-2">
                     <h4 className="font-bold text-rose-400 uppercase font-mono text-[11px]">Financial Loss Record</h4>
                     <div className="grid grid-cols-2 gap-2 text-slate-300">
-                      <div><span className="text-slate-500">Loss Amount:</span> <strong className="text-rose-400 font-mono">${(selectedCase.lossAmount || 0).toLocaleString()}</strong></div>
-                      <div><span className="text-slate-500">Payment Channel:</span> <span>{selectedCase.financialDetails?.paymentMethod || 'Crypto / Wire'}</span></div>
+<div><span className="text-slate-500">Loss Amount:</span> <strong className="text-rose-400 font-mono">₹{(selectedCase.lossAmount || 0).toLocaleString('en-IN')}</strong></div>                      <div><span className="text-slate-500">Payment Channel:</span> <span>{selectedCase.financialDetails?.paymentMethod || 'Crypto / Wire'}</span></div>
                       <div className="col-span-2 truncate"><span className="text-slate-500">TxHash/UTR:</span> <span className="font-mono text-cyan-400">{selectedCase.financialDetails?.transactionId || '0x7f8a9b2c3d4e5f6a1b...'}</span></div>
                     </div>
                   </div>

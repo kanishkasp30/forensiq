@@ -34,130 +34,8 @@ import {
   FileCode
 } from 'lucide-react';
 
-// Default example timeline sequence specified by user requirements
-const DEFAULT_TIMELINE_EVENTS: CaseTimelineEvent[] = [
-  {
-    id: 'tl-ex-1',
-    timestamp: '2026-08-05 10:32:00',
-    time: '10:32 AM',
-    title: 'Victim received suspicious SMS',
-    description: 'SMS received from sender ID +91 98765 43210 claiming: "Dear Customer, your Bank Account is locked due to KYC expiry. Click https://secure-login-verify-bank.com/phish to update immediately."',
-    type: 'sms',
-    actor: 'Threat Actor (+91 98765 43210)',
-    notes: [
-      '[10:40 AM - ForensIQ System]: Sender ID flagged in national cyber fraud registry across 4 previous incidents.'
-    ],
-    evidenceAttachments: [
-      {
-        id: 'att-101',
-        name: 'sms_screenshot_sender_98765.png',
-        type: 'Image (PNG)',
-        size: '1.2 MB',
-        sha256Hash: 'a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9',
-        uploadedAt: '10:35 AM'
-      }
-    ]
-  },
-  {
-    id: 'tl-ex-2',
-    timestamp: '2026-08-05 11:05:00',
-    time: '11:05 AM',
-    title: 'Victim clicked phishing URL',
-    description: 'Victim opened URL https://secure-login-verify-bank.com/phish from Mobile Chrome Browser (Android 14). Domain redirected to fake banking portal hosted on IP 185.220.101.5.',
-    type: 'phishing',
-    actor: 'Victim (Browser Client)',
-    notes: [
-      '[11:10 AM - Inspector Vance]: Domain registered 24 hours prior via Namecheap proxy. Takedown request queued.'
-    ],
-    evidenceAttachments: [
-      {
-        id: 'att-102',
-        name: 'phishing_url_header_dump.txt',
-        type: 'Text/HTTP Header',
-        size: '480 KB',
-        sha256Hash: 'f1e2d3c4b5a69876543210fedcba9876543210abcdef1234567890abcdef1234',
-        uploadedAt: '11:08 AM'
-      }
-    ]
-  },
-  {
-    id: 'tl-ex-3',
-    timestamp: '2026-08-05 11:12:00',
-    time: '11:12 AM',
-    title: 'UPI transaction initiated',
-    description: 'Fake banking portal prompted victim for instant VPA authorization. Fraudulent payment request generated for beneficiary VPA paym-fraudster@okaxis.',
-    type: 'transaction',
-    actor: 'UPI Gateway / Fraudulent VPA',
-    notes: [
-      '[11:14 AM - Cyber Cell Bot]: VPA paym-fraudster@okaxis linked to Axis Bank Branch #402.'
-    ]
-  },
-  {
-    id: 'tl-ex-4',
-    timestamp: '2026-08-05 11:15:00',
-    time: '11:15 AM',
-    title: '₹25,000 transferred',
-    description: 'Instant IMPS transaction executed. ₹25,000 deducted from victim account (Ref: IMPS/6029104829/RET) and routed to suspect mule account A/C ACC-9048-2819-5501.',
-    type: 'transaction',
-    actor: 'Axis Bank IMPS System',
-    notes: [
-      '[11:20 AM - Financial Intelligence Unit]: Account freeze request dispatched under Section 91 CrPC.'
-    ],
-    evidenceAttachments: [
-      {
-        id: 'att-103',
-        name: 'bank_transfer_receipt_25000.pdf',
-        type: 'PDF Document',
-        size: '2.1 MB',
-        sha256Hash: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
-        uploadedAt: '11:18 AM'
-      }
-    ]
-  },
-  {
-    id: 'tl-ex-5',
-    timestamp: '2026-08-05 11:30:00',
-    time: '11:30 AM',
-    title: 'Complaint filed',
-    description: 'Victim lodged formal cyber fraud report on ForensIQ National Portal (Incident Ref: CASE-2026-0891). Loss logged as ₹25,000 ($300 USD equivalent).',
-    type: 'complaint',
-    actor: 'Victim (Alex Rivera)',
-    notes: [
-      '[11:32 AM - Portal Triage]: Case marked CRITICAL priority due to active mule account activity.'
-    ]
-  },
-  {
-    id: 'tl-ex-6',
-    timestamp: '2026-08-05 12:10:00',
-    time: '12:10 PM',
-    title: 'Evidence uploaded',
-    description: 'Victim uploaded 3 digital artifacts: SMS screenshot, bank debit notification PDF, and phishing link URL copy. SHA-256 signatures generated and sealed.',
-    type: 'evidence_added',
-    actor: 'Victim Evidence Locker',
-    evidenceAttachments: [
-      {
-        id: 'att-104',
-        name: 'forensic_evidence_package_zip.zip',
-        type: 'ZIP Archive',
-        size: '5.8 MB',
-        sha256Hash: '8f9e0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f',
-        uploadedAt: '12:10 PM'
-      }
-    ]
-  },
-  {
-    id: 'tl-ex-7',
-    timestamp: '2026-08-05 14:00:00',
-    time: '2:00 PM',
-    title: 'Officer assigned',
-    description: 'Case formally assigned to Senior Inspector Sarah Vance (Cyber Command & Crypto Recovery Unit). Formal investigation and bank subpoena initiated.',
-    type: 'officer_assigned',
-    actor: 'Director Marcus Vance',
-    notes: [
-      '[2:05 PM - Inspector Vance]: Initiated emergency contact with Axis Bank Fraud Cell to trace downstream wallet splits.'
-    ]
-  }
-];
+// No mock/example timeline data — all events come from the real case record.
+
 
 export const OfficerTimeline: React.FC = () => {
   const { 
@@ -204,16 +82,11 @@ export const OfficerTimeline: React.FC = () => {
   const [formNotes, setFormNotes] = useState<string>('');
   const [formEvidenceName, setFormEvidenceName] = useState<string>('');
 
-  // Local fallback storage for interactive demo when viewing custom timelines
-  const [localTimeline, setLocalTimeline] = useState<CaseTimelineEvent[]>(DEFAULT_TIMELINE_EVENTS);
-
   // Get current case or construct active event list
   const activeCase = cases.find(c => c.id === selectedCaseId);
 
-  // Combine events: if activeCase has timeline events, merge with example timeline or use local state
-  const rawEvents = (activeCase && activeCase.timeline && activeCase.timeline.length > 0)
-    ? [...DEFAULT_TIMELINE_EVENTS, ...activeCase.timeline.filter(t => !DEFAULT_TIMELINE_EVENTS.some(d => d.id === t.id))]
-    : localTimeline;
+  // Real timeline events only — no mock/example data merged in
+  const rawEvents = activeCase?.timeline || [];
 
   // Filter & Search Logic
   const filteredEvents = rawEvents.filter(evt => {
@@ -298,8 +171,6 @@ export const OfficerTimeline: React.FC = () => {
       addTimelineEventToCase(activeCase.id, newEvent);
     }
 
-    // Update local state
-    setLocalTimeline(prev => [newEvent, ...prev]);
     setIsAddModalOpen(false);
   };
 
@@ -320,7 +191,6 @@ export const OfficerTimeline: React.FC = () => {
       updateTimelineEventInCase(activeCase.id, editingEvent.id, updatedFields);
     }
 
-    setLocalTimeline(prev => prev.map(t => t.id === editingEvent.id ? { ...t, ...updatedFields } : t));
     setEditingEvent(null);
   };
 
@@ -332,7 +202,6 @@ export const OfficerTimeline: React.FC = () => {
       deleteTimelineEventFromCase(activeCase.id, deletingEventId);
     }
 
-    setLocalTimeline(prev => prev.filter(t => t.id !== deletingEventId));
     setDeletingEventId(null);
   };
 
@@ -343,18 +212,6 @@ export const OfficerTimeline: React.FC = () => {
     if (activeCase) {
       addNoteToTimelineEvent(activeCase.id, eventId, newNoteInput);
     }
-
-    const timestampedNote = `[${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${currentUser.name}]: ${newNoteInput.trim()}`;
-    
-    setLocalTimeline(prev => prev.map(t => {
-      if (t.id === eventId) {
-        return {
-          ...t,
-          notes: [...(t.notes || []), timestampedNote]
-        };
-      }
-      return t;
-    }));
 
     setNewNoteInput('');
     setActiveNoteEventId(null);
@@ -376,16 +233,6 @@ export const OfficerTimeline: React.FC = () => {
     if (activeCase) {
       attachEvidenceToTimelineEvent(activeCase.id, eventId, newAtt);
     }
-
-    setLocalTimeline(prev => prev.map(t => {
-      if (t.id === eventId) {
-        return {
-          ...t,
-          evidenceAttachments: [...(t.evidenceAttachments || []), newAtt]
-        };
-      }
-      return t;
-    }));
 
     setEvidenceNameInput('');
     setActiveAttachEventId(null);
@@ -578,7 +425,7 @@ export const OfficerTimeline: React.FC = () => {
 
         <div className="p-4 bg-slate-950 border border-slate-800 rounded-xl space-y-1">
           <span className="text-slate-500 uppercase text-[10px] font-bold block">First Incident Marker</span>
-          <span className="text-sm font-bold text-cyan-400">{sortedEvents[0]?.time || '10:32 AM'}</span>
+          <span className="text-sm font-bold text-cyan-400">{sortedEvents[0]?.time || 'No events yet'}</span>
         </div>
 
         <div className="p-4 bg-slate-950 border border-slate-800 rounded-xl space-y-1">

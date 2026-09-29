@@ -6,8 +6,7 @@ import { CaseItem } from '../../types';
 import { 
   Plus, 
   Clock, 
-  DollarSign, 
-  FolderLock, 
+  IndianRupee, 
   ShieldCheck, 
   FileText, 
   CheckCircle2, 
@@ -101,9 +100,9 @@ export const VictimOverview: React.FC<VictimOverviewProps> = ({ onSelectCase }) 
         />
         <StatCard
           title="Reported Loss Amount"
-          value={`$${totalLoss.toLocaleString()}`}
+          value={`₹${totalLoss.toLocaleString('en-IN')}`}
           subtitle="Submitted for Recovery Recall"
-          icon={<DollarSign className="w-5 h-5 text-rose-400" />}
+          icon={<IndianRupee className="w-5 h-5 text-rose-400" />}
           accentColor="red"
         />
       </div>
@@ -161,7 +160,7 @@ export const VictimOverview: React.FC<VictimOverviewProps> = ({ onSelectCase }) 
                 <div>
                   <span className="text-slate-500 uppercase font-mono text-[10px]">Loss Amount</span>
                   <div className="font-bold text-rose-400 font-mono mt-0.5">
-                    {latestCase.lossAmount ? `$${latestCase.lossAmount.toLocaleString()}` : '$0'}
+                    {latestCase.lossAmount ? `₹${latestCase.lossAmount.toLocaleString('en-IN')}` : '₹0'}
                   </div>
                 </div>
               </div>
@@ -237,53 +236,6 @@ export const VictimOverview: React.FC<VictimOverviewProps> = ({ onSelectCase }) 
             )}
           </div>
         </div>
-      </div>
-
-      {/* Quick Access Action Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-4 border-t border-slate-800/60">
-        <button
-          onClick={() => navigate('/victim/file-complaint')}
-          className="p-4 rounded-xl bg-slate-900/40 hover:bg-slate-900 border border-slate-800 hover:border-cyan-500/40 text-left transition-all group cursor-pointer"
-        >
-          <div className="w-9 h-9 rounded-lg bg-cyan-500/10 text-cyan-400 flex items-center justify-center mb-3">
-            <Plus className="w-5 h-5" />
-          </div>
-          <div className="font-bold text-white text-xs group-hover:text-cyan-400 transition-colors">File New Complaint</div>
-          <div className="text-[11px] text-slate-400 mt-1">Submit 6-step incident report</div>
-        </button>
-
-        <button
-          onClick={() => navigate('/victim/evidence')}
-          className="p-4 rounded-xl bg-slate-900/40 hover:bg-slate-900 border border-slate-800 hover:border-emerald-500/40 text-left transition-all group cursor-pointer"
-        >
-          <div className="w-9 h-9 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center mb-3">
-            <FolderLock className="w-5 h-5" />
-          </div>
-          <div className="font-bold text-white text-xs group-hover:text-emerald-400 transition-colors">Upload Evidence</div>
-          <div className="text-[11px] text-slate-400 mt-1">SHA-256 Vault File Stamping</div>
-        </button>
-
-        <button
-          onClick={() => navigate('/victim/timeline')}
-          className="p-4 rounded-xl bg-slate-900/40 hover:bg-slate-900 border border-slate-800 hover:border-indigo-500/40 text-left transition-all group cursor-pointer"
-        >
-          <div className="w-9 h-9 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center mb-3">
-            <Clock className="w-5 h-5" />
-          </div>
-          <div className="font-bold text-white text-xs group-hover:text-indigo-400 transition-colors">Case Timeline</div>
-          <div className="text-[11px] text-slate-400 mt-1">Track milestone progress live</div>
-        </button>
-
-        <button
-          onClick={() => navigate('/victim/notifications')}
-          className="p-4 rounded-xl bg-slate-900/40 hover:bg-slate-900 border border-slate-800 hover:border-amber-500/40 text-left transition-all group cursor-pointer"
-        >
-          <div className="w-9 h-9 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center mb-3">
-            <Bell className="w-5 h-5" />
-          </div>
-          <div className="font-bold text-white text-xs group-hover:text-amber-400 transition-colors">Notifications</div>
-          <div className="text-[11px] text-slate-400 mt-1">Officer alerts & status changes</div>
-        </button>
       </div>
 
     </div>

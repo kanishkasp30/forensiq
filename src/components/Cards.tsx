@@ -1,7 +1,7 @@
 import React, { ReactNode } from 'react';
 import { CaseItem, ThreatFeedItem } from '../types';
 import { UrgencyBadge, StatusBadge } from './StatusBadges';
-import { ArrowUpRight, ShieldAlert, FileText, Lock, Calendar, User, DollarSign, Activity, Hash, AlertOctagon } from 'lucide-react';
+import { ArrowUpRight, ShieldAlert, FileText, Lock, Calendar, User, IndianRupee, Activity, Hash, AlertOctagon } from 'lucide-react';
 
 export const StatCard: React.FC<{
   title: string;
@@ -10,7 +10,7 @@ export const StatCard: React.FC<{
   isPositive?: boolean;
   icon: ReactNode;
   subtitle?: string;
-  accentColor?: 'cyan' | 'red' | 'emerald' | 'amber' | 'purple';
+  accentColor?: 'cyan' | 'red' | 'emerald' | 'amber' | 'purple' | 'indigo';
 }> = ({ title, value, change, isPositive, icon, subtitle, accentColor = 'cyan' }) => {
   const accentGlows = {
     cyan: 'border-slate-800 hover:border-cyan-500/30 text-cyan-400',
@@ -18,6 +18,7 @@ export const StatCard: React.FC<{
     emerald: 'border-slate-800 hover:border-emerald-500/30 text-emerald-400',
     amber: 'border-slate-800 hover:border-amber-500/30 text-amber-400',
     purple: 'border-slate-800 hover:border-purple-500/30 text-purple-400',
+    indigo: 'border-slate-800 hover:border-indigo-500/30 text-indigo-400',
   };
 
   return (
@@ -80,8 +81,8 @@ export const CaseCard: React.FC<{
         </div>
         {caseItem.lossAmount ? (
           <div className="flex items-center gap-1.5 text-red-400 font-mono font-medium">
-            <DollarSign className="w-3.5 h-3.5" />
-            <span>${caseItem.lossAmount.toLocaleString()} Loss</span>
+            <IndianRupee className="w-3.5 h-3.5" />
+            <span>₹{caseItem.lossAmount.toLocaleString('en-IN')} Loss</span>
           </div>
         ) : null}
         <div className="flex items-center gap-1.5 text-slate-300">

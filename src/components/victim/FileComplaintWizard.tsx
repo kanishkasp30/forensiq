@@ -12,7 +12,7 @@ import {
   User, 
   AlertTriangle, 
   FileText, 
-  DollarSign, 
+  IndianRupee, 
   FolderLock, 
   Lock, 
   Copy, 
@@ -34,11 +34,11 @@ export const FileComplaintWizard: React.FC<FileComplaintWizardProps> = ({ onComp
   const [submittedCase, setSubmittedCase] = useState<CaseItem | null>(null);
 
   // Step 1: Personal Information
-  const [fullName, setFullName] = useState(currentUser.name || '');
+ const [fullName, setFullName] = useState(currentUser.name || '');
   const [email, setEmail] = useState(currentUser.email || '');
-  const [phone, setPhone] = useState(currentUser.phone || '+1 (555) 234-8901');
-  const [govtId, setGovtId] = useState(currentUser.govtId || 'US-GOV-984214-X');
-  const [address, setAddress] = useState(currentUser.address || '742 Evergreen Terrace, San Francisco, CA');
+  const [phone, setPhone] = useState(currentUser.phone || '');
+  const [govtId, setGovtId] = useState(currentUser.govtId || '');
+  const [address, setAddress] = useState(currentUser.address || '');
 
   // Step 2: Incident Information
   const [title, setTitle] = useState('');
@@ -57,11 +57,11 @@ export const FileComplaintWizard: React.FC<FileComplaintWizardProps> = ({ onComp
 
   // Step 4: Financial & Transaction Details
   const [hasLoss, setHasLoss] = useState<boolean>(true);
-  const [lossAmount, setLossAmount] = useState<number | ''>(25000);
-  const [paymentMethod, setPaymentMethod] = useState('Crypto USDT / BTC');
-  const [transactionId, setTransactionId] = useState('0x7f8a9b2c3d4e5f6a1b2c3d4e5f6a7b8c9d0e1f2a');
+  const [lossAmount, setLossAmount] = useState<number | ''>('');
+  const [paymentMethod, setPaymentMethod] = useState('');
+  const [transactionId, setTransactionId] = useState('');
   const [transactionDate, setTransactionDate] = useState(new Date().toISOString().slice(0, 10));
-  const [fraudulentAccount, setFraudulentAccount] = useState('TRX7v9k2LmPqR3sTuVwXyZ123456');
+  const [fraudulentAccount, setFraudulentAccount] = useState('');
 
   // Step 5: Supporting Evidence
   const [stagedEvidence, setStagedEvidence] = useState<EvidenceFile[]>([]);
@@ -92,14 +92,15 @@ export const FileComplaintWizard: React.FC<FileComplaintWizardProps> = ({ onComp
     setCurrentStep(prev => Math.max(prev - 1, 1));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!acceptedTerms) {
       setErrorMsg('You must declare truthful information and accept the legal terms before submitting.');
       return;
     }
 
-    const created = addCase({
+    try {
+      const created = await addCase({
       title,
       category,
       urgency,
@@ -129,10 +130,14 @@ export const FileComplaintWizard: React.FC<FileComplaintWizardProps> = ({ onComp
         additionalNotes: suspectNotes,
       },
       initialEvidence: stagedEvidence,
-    });
+      });
 
-    setSubmittedCase(created);
-    if (onComplete) onComplete(created);
+      setSubmittedCase(created);
+      if (onComplete) onComplete(created);
+    } catch (error) {
+      console.error('Failed to submit complaint:', error);
+      setErrorMsg('Unable to submit complaint. Please try again.');
+    }
   };
 
   const categoriesList: CaseCategory[] = [
@@ -330,18 +335,18 @@ export const FileComplaintWizard: React.FC<FileComplaintWizardProps> = ({ onComp
                   required
                   value={phone}
                   onChange={e => setPhone(e.target.value)}
-                  placeholder="+1 (555) 019-2834"
-                  className="w-full px-3.5 py-2 bg-slate-900 border border-slate-700/80 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500"
+                  placeholder="+91 98765 43210"    
+              className="w-full px-3.5 py-2 bg-slate-900 border border-slate-700/80 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-slate-300 font-medium">Govt Identification / Passport / SSN</label>
+                <label className="text-slate-300 font-medium">Govt ID (Aadhaar / PAN / Passport)</label>
                 <input
                   type="text"
                   value={govtId}
                   onChange={e => setGovtId(e.target.value)}
-                  placeholder="US-GOV-984214-X"
+                  placeholder="e.g. XXXX XXXX XXXX (Aadhaar)"
                   className="w-full px-3.5 py-2 bg-slate-900 border border-slate-700/80 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500"
                 />
               </div>
@@ -352,7 +357,7 @@ export const FileComplaintWizard: React.FC<FileComplaintWizardProps> = ({ onComp
                   type="text"
                   value={address}
                   onChange={e => setAddress(e.target.value)}
-                  placeholder="742 Evergreen Terrace, San Francisco, CA 94107"
+                  placeholder="123 MG Road, Chennai, Tamil Nadu 600001"
                   className="w-full px-3.5 py-2 bg-slate-900 border border-slate-700/80 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500"
                 />
               </div>
@@ -526,7 +531,7 @@ export const FileComplaintWizard: React.FC<FileComplaintWizardProps> = ({ onComp
           <div className="space-y-6 animate-fadeIn">
             <div className="border-b border-slate-800/80 pb-4">
               <h3 className="text-lg font-serif italic text-white flex items-center gap-2">
-                <DollarSign className="w-5 h-5 text-cyan-400" />
+                <IndianRupee className="w-5 h-5 text-cyan-400" />
                 Step 4: Financial & Transaction Loss Details
               </h3>
               <p className="text-xs text-slate-400 mt-0.5">
@@ -562,15 +567,15 @@ export const FileComplaintWizard: React.FC<FileComplaintWizardProps> = ({ onComp
               {hasLoss && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <label className="text-slate-300 font-medium">Total Loss Amount ($ USD)</label>
+                    <label className="text-slate-300 font-medium">Total Loss Amount (₹ INR)</label>
                     <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 font-bold">$</span>
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 font-bold">₹</span>
                       <input
                         type="number"
                         min="0"
                         value={lossAmount}
                         onChange={e => setLossAmount(e.target.value === '' ? '' : Number(e.target.value))}
-                        placeholder="25000"
+                        placeholder="e.g. 25000"
                         className="w-full pl-8 pr-3.5 py-2 bg-slate-900 border border-slate-700/80 rounded-lg text-slate-100 font-mono focus:outline-none focus:border-cyan-500"
                       />
                     </div>
@@ -583,9 +588,10 @@ export const FileComplaintWizard: React.FC<FileComplaintWizardProps> = ({ onComp
                       onChange={e => setPaymentMethod(e.target.value)}
                       className="w-full px-3.5 py-2 bg-slate-900 border border-slate-700/80 rounded-lg text-slate-100 focus:outline-none focus:border-cyan-500 cursor-pointer"
                     >
-                      <option value="Crypto USDT / BTC" className="bg-slate-900">Crypto Transfer (USDT / BTC / ETH)</option>
-                      <option value="Wire Transfer" className="bg-slate-900">Bank Wire Transfer</option>
+                      <option value="" className="bg-slate-900">Select a payment channel</option>
                       <option value="UPI / Instant Pay" className="bg-slate-900">UPI / Instant Mobile Payment</option>
+                      <option value="Bank Transfer / IMPS / NEFT" className="bg-slate-900">Bank Transfer (IMPS / NEFT / RTGS)</option>
+                      <option value="Crypto USDT / BTC" className="bg-slate-900">Crypto Transfer (USDT / BTC / ETH)</option>
                       <option value="Credit / Debit Card" className="bg-slate-900">Credit / Debit Card Transaction</option>
                       <option value="Gift Card / Voucher" className="bg-slate-900">Gift Cards / Prepaid Codes</option>
                     </select>
@@ -597,7 +603,7 @@ export const FileComplaintWizard: React.FC<FileComplaintWizardProps> = ({ onComp
                       type="text"
                       value={transactionId}
                       onChange={e => setTransactionId(e.target.value)}
-                      placeholder="e.g., 0x7f8a9b2c3d4e5f6a1b2c3d4e5f6a7b8c9d0e1f2a"
+                      placeholder="e.g., UPI UTR 305512345678 or bank ref no."
                       className="w-full px-3.5 py-2 bg-slate-900 border border-slate-700/80 rounded-lg text-slate-100 font-mono focus:outline-none focus:border-cyan-500"
                     />
                   </div>
@@ -618,8 +624,7 @@ export const FileComplaintWizard: React.FC<FileComplaintWizardProps> = ({ onComp
                       type="text"
                       value={fraudulentAccount}
                       onChange={e => setFraudulentAccount(e.target.value)}
-                      placeholder="e.g., Receiver Wallet / Bank Acc No: TRX7v9k2LmPqR3sTuVwXyZ123456"
-                      className="w-full px-3.5 py-2 bg-slate-900 border border-slate-700/80 rounded-lg text-slate-100 font-mono focus:outline-none focus:border-cyan-500"
+placeholder="e.g., Receiver UPI ID, Bank A/C No., or Wallet Address"                      className="w-full px-3.5 py-2 bg-slate-900 border border-slate-700/80 rounded-lg text-slate-100 font-mono focus:outline-none focus:border-cyan-500"
                     />
                   </div>
                 </div>
@@ -726,8 +731,7 @@ export const FileComplaintWizard: React.FC<FileComplaintWizardProps> = ({ onComp
                 </div>
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   <div><span className="text-slate-500">Suspect Alias:</span> <span className="text-slate-200 font-semibold">{suspectName || 'Unknown'}</span></div>
-                  <div><span className="text-slate-500">Loss Amount:</span> <strong className="text-red-400 font-mono">${(lossAmount || 0).toLocaleString()}</strong></div>
-                  <div><span className="text-slate-500">Payment Channel:</span> <span className="text-slate-300">{paymentMethod}</span></div>
+<div><span className="text-slate-500">Loss Amount:</span> <strong className="text-red-400 font-mono">₹{(lossAmount || 0).toLocaleString('en-IN')}</strong></div>                  <div><span className="text-slate-500">Payment Channel:</span> <span className="text-slate-300">{paymentMethod}</span></div>
                   <div className="truncate"><span className="text-slate-500">TxHash:</span> <span className="text-cyan-400 font-mono">{transactionId || 'None'}</span></div>
                 </div>
               </div>

@@ -3,7 +3,7 @@ import { EvidenceFile } from '../types';
 import { VerificationBadge } from './StatusBadges';
 import { 
   UploadCloud, 
-  File, 
+  File as FileIcon, 
   FileText, 
   Image as ImageIcon, 
   Music, 
@@ -186,7 +186,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
           <Video className="w-3 h-3 text-emerald-400" /> Video
         </button>
         <button type="button" onClick={() => handleLoadSample('Document')} className="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-800 hover:border-cyan-500 text-slate-300 hover:text-cyan-400 flex items-center gap-1 transition-all cursor-pointer">
-          <File className="w-3 h-3 text-amber-400" /> Document
+          <FileIcon className="w-3 h-3 text-amber-400" /> Document
         </button>
         <button type="button" onClick={() => handleLoadSample('Screenshot')} className="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-800 hover:border-cyan-500 text-slate-300 hover:text-cyan-400 flex items-center gap-1 transition-all cursor-pointer">
           <Camera className="w-3 h-3 text-blue-400" /> Screenshot
@@ -238,7 +238,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
               <Video className="w-3 h-3" /> Video
             </span>
             <span className="px-2.5 py-1 rounded-full bg-slate-900 border border-slate-800 text-[10px] text-amber-400 font-mono inline-flex items-center gap-1">
-              <File className="w-3 h-3" /> Documents
+              <FileIcon className="w-3 h-3" /> Documents
             </span>
             <span className="px-2.5 py-1 rounded-full bg-slate-900 border border-slate-800 text-[10px] text-blue-400 font-mono inline-flex items-center gap-1">
               <Camera className="w-3 h-3" /> Screenshots
@@ -255,7 +255,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
                 {fileCategory === 'PDF' && <FileText className="w-6 h-6 text-red-400" />}
                 {fileCategory === 'Audio' && <Music className="w-6 h-6 text-purple-400" />}
                 {fileCategory === 'Video' && <Video className="w-6 h-6 text-emerald-400" />}
-                {fileCategory === 'Document' && <File className="w-6 h-6 text-amber-400" />}
+                {fileCategory === 'Document' && <FileIcon className="w-6 h-6 text-amber-400" />}
                 {fileCategory === 'Screenshot' && <Camera className="w-6 h-6 text-blue-400" />}
               </div>
               <div>

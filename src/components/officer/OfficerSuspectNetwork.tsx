@@ -1,5 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useApp } from '../../context/AppContext';
+import { CaseItem } from '../../types';
 import { 
   Users, 
   User, 
@@ -77,283 +78,205 @@ export interface NetworkLink {
   isSharedLink?: boolean; // Highlighted if connecting across multiple cases
 }
 
-// Initial Mock Dataset for the Interactive Network Graph
-const INITIAL_NODES: NetworkNode[] = [
-  // 1. Suspect Nodes
-  {
-    id: 'node-suspect-1',
-    label: 'Suspect A (Vikram Malhotra)',
-    type: 'Suspect',
-    subtext: 'Alias: @ShadowOperator (Telegram)',
-    riskLevel: 'Critical',
-    associatedCases: ['CASE-1024', 'CASE-1089', 'CASE-2048'],
-    x: 420,
-    y: 180,
-    details: {
-      status: 'Active Syndicate Mastermind',
-      location: 'Dubai / Eastern Europe Proxy',
-      notes: 'Primary threat actor organizing multi-vector phishing and mule account fund routing.'
+// Generates network graph nodes/links from real case data
+// (victim, suspectInfo) instead of hardcoded mock records.
+const generateNetworkFromCases = (cases: CaseItem[]): { nodes: NetworkNode[]; links: NetworkLink[] } => {
+  const nodes: NetworkNode[] = [];
+  const links: NetworkLink[] = [];
+
+  cases.forEach((c, idx) => {
+    const angleStep = (2 * Math.PI) / Math.max(cases.length, 1);
+    const baseX = 550 + 380 * Math.cos(idx * angleStep);
+    const baseY = 380 + 260 * Math.sin(idx * angleStep);
+
+    const caseNodeId = `node-case-${c.id}`;
+    const urgencyToRisk: Record<string, NetworkNode['riskLevel']> = {
+      Critical: 'Critical',
+      High: 'High',
+      Medium: 'Medium',
+      Low: 'Low',
+    };
+
+    nodes.push({
+      id: caseNodeId,
+      label: c.id,
+      type: 'Case',
+      subtext: c.title,
+      riskLevel: urgencyToRisk[c.urgency] || 'Medium',
+      associatedCases: [c.id],
+      x: baseX,
+      y: baseY,
+      details: {
+        status: c.status,
+        notes: c.description,
+      },
+    });
+
+    let victimNodeId: string | null = null;
+    if (c.victimName) {
+      victimNodeId = `node-victim-${c.id}`;
+      nodes.push({
+        id: victimNodeId,
+        label: `Victim (${c.victimName})`,
+        type: 'Victim',
+        subtext: c.lossAmount
+          ? `Reported Loss: ₹${c.lossAmount.toLocaleString('en-IN')}`
+          : 'No reported financial loss',
+        riskLevel: 'Low',
+        associatedCases: [c.id],
+        x: baseX - 160,
+        y: baseY - 110,
+        details: {
+          status: c.status,
+          location: c.victimAddress,
+          notes: c.victimContact,
+        },
+      });
+      links.push({
+        id: `link-${c.id}-victim-case`,
+        source: victimNodeId,
+        target: caseNodeId,
+        relationship: 'Filed Complaint',
+      });
     }
-  },
-  {
-    id: 'node-suspect-2',
-    label: 'Suspect B (Rajesh Kumar)',
-    type: 'Suspect',
-    subtext: 'Primary Mule Account Handler',
-    riskLevel: 'High',
-    associatedCases: ['CASE-1024', 'CASE-1089'],
-    x: 750,
-    y: 280,
-    details: {
-      status: 'Under Surveillance',
-      location: 'Mumbai, MH, India',
-      notes: 'Recruited local mule accounts for IMPS cashouts.'
+
+    const s = c.suspectInfo;
+    const hasSuspectData =
+      s && (s.name || s.alias || s.contact || s.ipAddress || s.cryptoWallet || s.paymentDetails);
+
+    if (hasSuspectData && s) {
+      const suspectNodeId = `node-suspect-${c.id}`;
+      const threatToRisk: Record<string, NetworkNode['riskLevel']> = {
+        'Known Syndicate': 'Critical',
+        'Automated Botnet': 'High',
+        'Lone Actor': 'Medium',
+        'Under Investigation': 'Medium',
+      };
+
+      nodes.push({
+        id: suspectNodeId,
+        label: s.name ? `Suspect (${s.name})` : s.alias ? `Suspect (${s.alias})` : 'Unidentified Suspect',
+        type: 'Suspect',
+        subtext: s.alias ? `Alias: ${s.alias}` : (s.threatLevel || 'Under Investigation'),
+        riskLevel: (s.threatLevel && threatToRisk[s.threatLevel]) || 'Medium',
+        associatedCases: [c.id],
+        x: baseX + 160,
+        y: baseY - 110,
+        details: {
+          status: s.threatLevel,
+          location: s.location,
+          notes: s.additionalNotes,
+        },
+      });
+      links.push({
+        id: `link-${c.id}-suspect-case`,
+        source: suspectNodeId,
+        target: caseNodeId,
+        relationship: 'Named In Complaint',
+      });
+
+      if (s.contact) {
+        const isEmail = s.contact.includes('@');
+        const contactNodeId = `node-contact-${c.id}`;
+        nodes.push({
+          id: contactNodeId,
+          label: s.contact,
+          type: isEmail ? 'Email' : 'Phone Number',
+          subtext: isEmail ? 'Suspect Email Address' : 'Suspect Phone Number',
+          riskLevel: 'Medium',
+          associatedCases: [c.id],
+          x: baseX + 300,
+          y: baseY,
+          details: {},
+        });
+        links.push({
+          id: `link-${c.id}-suspect-contact`,
+          source: suspectNodeId,
+          target: contactNodeId,
+          relationship: isEmail ? 'Uses Email' : 'Uses Phone Number',
+        });
+      }
+
+      if (s.ipAddress) {
+        const ipNodeId = `node-ip-${c.id}`;
+        nodes.push({
+          id: ipNodeId,
+          label: s.ipAddress,
+          type: 'IP Address',
+          subtext: 'Traced IP Address',
+          riskLevel: 'High',
+          associatedCases: [c.id],
+          x: baseX + 160,
+          y: baseY + 110,
+          details: {
+            isp: s.associatedDomain,
+          },
+        });
+        links.push({
+          id: `link-${c.id}-suspect-ip`,
+          source: suspectNodeId,
+          target: ipNodeId,
+          relationship: 'Connected From IP',
+        });
+      }
+
+      const paymentValue = s.cryptoWallet || s.paymentDetails;
+      if (paymentValue) {
+        const payNodeId = `node-payment-${c.id}`;
+        nodes.push({
+          id: payNodeId,
+          label: paymentValue,
+          type: s.cryptoWallet ? 'UPI ID' : 'Bank Account',
+          subtext: s.cryptoWallet ? 'Crypto Wallet / VPA' : 'Payment / Bank Details',
+          riskLevel: 'High',
+          associatedCases: [c.id],
+          x: baseX - 160,
+          y: baseY + 110,
+          details: {
+            amount: c.lossAmount ? `₹${c.lossAmount.toLocaleString('en-IN')}` : undefined,
+          },
+        });
+        links.push({
+          id: `link-${c.id}-suspect-payment`,
+          source: suspectNodeId,
+          target: payNodeId,
+          relationship: 'Configured Payment Channel',
+        });
+        if (victimNodeId) {
+          links.push({
+            id: `link-${c.id}-victim-payment`,
+            source: victimNodeId,
+            target: payNodeId,
+            relationship: 'Transferred Funds To',
+          });
+        }
+      }
     }
-  },
+  });
 
-  // 2. Victim Nodes
-  {
-    id: 'node-victim-1',
-    label: 'Victim (Alex Rivera)',
-    type: 'Victim',
-    subtext: 'Reporting Complainant (Loss: ₹25,000)',
-    riskLevel: 'Low',
-    associatedCases: ['CASE-1024'],
-    x: 120,
-    y: 120,
-    details: {
-      status: 'Complaint Verified',
-      location: 'San Jose, CA / Delhi NCR',
-      notes: 'Received SMS scam, clicked phishing link, loss ₹25,000.'
-    }
-  },
-  {
-    id: 'node-victim-2',
-    label: 'Victim (Elena Rostova)',
-    type: 'Victim',
-    subtext: 'Identity Fraud Loss: $12,400',
-    riskLevel: 'Low',
-    associatedCases: ['CASE-1089'],
-    x: 120,
-    y: 380,
-    details: {
-      status: 'Statement Recorded',
-      location: 'Chicago, IL',
-      notes: 'Credentials stolen via spoofed banking domain.'
-    }
-  },
+  return { nodes, links };
+};
 
-  // 3. Case Nodes
-  {
-    id: 'node-case-1024',
-    label: 'Case #1024 (Banking Trojan Fraud)',
-    type: 'Case',
-    subtext: 'Primary Incident File',
-    riskLevel: 'Critical',
-    associatedCases: ['CASE-1024'],
-    x: 300,
-    y: 300,
-    details: {
-      status: 'Under Active Investigation',
-      timestamp: '2026-08-05 10:32:00',
-      notes: 'SMS phishing leading to unauthorized IMPS fund extraction.'
-    }
-  },
-  {
-    id: 'node-case-1089',
-    label: 'Case #1089 (Phishing & Identity Theft)',
-    type: 'Case',
-    subtext: 'Correlated Incident File',
-    riskLevel: 'High',
-    associatedCases: ['CASE-1089'],
-    x: 550,
-    y: 480,
-    details: {
-      status: 'Cross-Bureau Linked',
-      timestamp: '2026-08-04 14:15:00',
-      notes: 'Identical phone sender ID and mule bank account detected.'
-    }
-  },
-  {
-    id: 'node-case-2048',
-    label: 'Case #2048 (Investment Fraud Syndicate)',
-    type: 'Case',
-    subtext: 'Multi-State Complaint',
-    riskLevel: 'High',
-    associatedCases: ['CASE-2048'],
-    x: 820,
-    y: 500,
-    details: {
-      status: 'Subpoena Dispatched',
-      timestamp: '2026-08-02 09:00:00',
-      notes: 'Shared mule bank account ACC-9048-2819-5501.'
-    }
-  },
-
-  // 4. Phone Number Nodes
-  {
-    id: 'node-phone-1',
-    label: 'Phone: +1 (555) 019-2834',
-    type: 'Phone Number',
-    subtext: 'VOIP Relay Node',
-    riskLevel: 'High',
-    associatedCases: ['CASE-1024'],
-    x: 280,
-    y: 80,
-    details: {
-      registeredOwner: 'Twilio Virtual SIP Trunk',
-      isp: 'Twilio Cloud Telecom',
-      notes: 'SMS gateway handle used in initial extortion text.'
-    }
-  },
-  {
-    id: 'node-phone-2',
-    label: 'Phone: +91 98765 43210',
-    type: 'Phone Number',
-    subtext: '🚨 SHARED IN 2 CASES (#1024 & #1089)',
-    riskLevel: 'Critical',
-    associatedCases: ['CASE-1024', 'CASE-1089'],
-    x: 500,
-    y: 80,
-    details: {
-      registeredOwner: 'Fake KYC / Burner SIM',
-      isp: 'Airtel Telecom (Delhi Circle)',
-      notes: 'SMS sender ID appearing in both Case #1024 and Case #1089 phishing blasts.'
-    }
-  },
-
-  // 5. Email Nodes
-  {
-    id: 'node-email-1',
-    label: 'Email: suspect_x@shadowpay.io',
-    type: 'Email',
-    subtext: 'Spoofed Domain Contact',
-    riskLevel: 'High',
-    associatedCases: ['CASE-1024', 'CASE-1089'],
-    x: 620,
-    y: 180,
-    details: {
-      registeredOwner: 'Namecheap Private Registration',
-      notes: 'Header analysis shows mail routed through Mailgun relay.'
-    }
-  },
-
-  // 6. UPI ID Nodes
-  {
-    id: 'node-upi-1',
-    label: 'UPI ID: paym-fraudster@okaxis',
-    type: 'UPI ID',
-    subtext: 'VPA Instant Payout Target',
-    riskLevel: 'Critical',
-    associatedCases: ['CASE-1024'],
-    x: 480,
-    y: 350,
-    details: {
-      registeredOwner: 'Rajesh Kumar',
-      bankBranch: 'Axis Bank Branch #402',
-      notes: 'Virtual Payment Address used to trigger ₹25,000 victim transfer.'
-    }
-  },
-
-  // 7. Bank Account Nodes
-  {
-    id: 'node-bank-1',
-    label: 'Bank Account: ACC-9048-2819-5501',
-    type: 'Bank Account',
-    subtext: '🚨 SHARED IN 3 CASES (#1024, #1089, #2048)',
-    riskLevel: 'Critical',
-    associatedCases: ['CASE-1024', 'CASE-1089', 'CASE-2048'],
-    x: 720,
-    y: 400,
-    details: {
-      registeredOwner: 'Rajesh Kumar (Mule Account)',
-      bankBranch: 'Axis Bank Branch #402, Mumbai',
-      notes: 'Key financial node connecting Case #1024, Case #1089, and Case #2048. Freeze notice issued.'
-    }
-  },
-
-  // 8. IP Address Nodes
-  {
-    id: 'node-ip-1',
-    label: 'IP: 185.220.101.5',
-    type: 'IP Address',
-    subtext: 'TOR Exit Node / Host',
-    riskLevel: 'High',
-    associatedCases: ['CASE-1024', 'CASE-1089'],
-    x: 280,
-    y: 500,
-    details: {
-      isp: 'Torland Exit Router',
-      location: 'Frankfurt, DE',
-      notes: 'Origin IP logged during victim credential capture.'
-    }
-  },
-
-  // 9. Transaction Nodes
-  {
-    id: 'node-txn-1',
-    label: 'Txn: TXN-8849201948 (₹25,000)',
-    type: 'Transaction',
-    subtext: 'IMPS Direct Transfer',
-    riskLevel: 'High',
-    associatedCases: ['CASE-1024'],
-    x: 180,
-    y: 260,
-    details: {
-      amount: '₹25,000 (Deducted)',
-      timestamp: '2026-08-05 11:15:00',
-      notes: 'IMPS Ref: IMPS/6029104829/RET from Victim to Mule Account.'
-    }
-  }
-];
-
-// Initial Links connecting nodes
-const INITIAL_LINKS: NetworkLink[] = [
-  // Suspect A Connections
-  { id: 'l1', source: 'node-suspect-1', target: 'node-phone-1', relationship: 'Uses VOIP Phone' },
-  { id: 'l2', source: 'node-suspect-1', target: 'node-phone-2', relationship: 'Controls Burner SMS' },
-  { id: 'l3', source: 'node-suspect-1', target: 'node-email-1', relationship: 'Operates Handle' },
-  { id: 'l4', source: 'node-suspect-1', target: 'node-suspect-2', relationship: 'Directs Mule Network' },
-  { id: 'l5', source: 'node-suspect-1', target: 'node-upi-1', relationship: 'Configured VPA' },
-
-  // Victim 1 Connections
-  { id: 'l6', source: 'node-victim-1', target: 'node-case-1024', relationship: 'Filed Complaint' },
-  { id: 'l7', source: 'node-victim-1', target: 'node-txn-1', relationship: 'Initiated IMPS Loss' },
-
-  // Transaction Connections
-  { id: 'l8', source: 'node-txn-1', target: 'node-upi-1', relationship: 'Routed via VPA' },
-  { id: 'l9', source: 'node-txn-1', target: 'node-bank-1', relationship: 'Funds Deposited' },
-
-  // Suspect B Connections
-  { id: 'l10', source: 'node-suspect-2', target: 'node-bank-1', relationship: 'Account Title Holder' },
-
-  // IP Address Connections
-  { id: 'l11', source: 'node-ip-1', target: 'node-case-1024', relationship: 'Access Logged' },
-  { id: 'l12', source: 'node-ip-1', target: 'node-case-1089', relationship: 'Access Logged' },
-
-  // CROSS-CASE LINKAGES (Crucial requirement: phone or bank account appears in multiple cases)
-  { id: 'l13', source: 'node-phone-2', target: 'node-case-1024', relationship: 'Sender in Case #1024', isSharedLink: true },
-  { id: 'l14', source: 'node-phone-2', target: 'node-case-1089', relationship: 'Sender in Case #1089', isSharedLink: true },
-
-  { id: 'l15', source: 'node-bank-1', target: 'node-case-1024', relationship: 'Mule Bank in Case #1024', isSharedLink: true },
-  { id: 'l16', source: 'node-bank-1', target: 'node-case-1089', relationship: 'Mule Bank in Case #1089', isSharedLink: true },
-  { id: 'l17', source: 'node-bank-1', target: 'node-case-2048', relationship: 'Mule Bank in Case #2048', isSharedLink: true },
-
-  // Victim 2 Connections
-  { id: 'l18', source: 'node-victim-2', target: 'node-case-1089', relationship: 'Filed Complaint' }
-];
 
 export const OfficerSuspectNetwork: React.FC = () => {
   const { cases } = useApp();
 
-  // State
-  const [nodes, setNodes] = useState<NetworkNode[]>(INITIAL_NODES);
-  const [links, setLinks] = useState<NetworkLink[]>(INITIAL_LINKS);
+  // State - seeded from real case data (victim + suspectInfo), not mock records
+  const [nodes, setNodes] = useState<NetworkNode[]>(() => generateNetworkFromCases(cases).nodes);
+  const [links, setLinks] = useState<NetworkLink[]>(() => generateNetworkFromCases(cases).links);
+
+  // Re-derive the graph whenever the underlying case data changes
+  // (note: this resets manually dragged positions / custom nodes)
+  useEffect(() => {
+    const generated = generateNetworkFromCases(cases);
+    setNodes(generated.nodes);
+    setLinks(generated.links);
+  }, [cases]);
 
   const [activeViewMode, setActiveViewMode] = useState<'canvas' | 'tree' | 'matrix'>('canvas');
   const [selectedNodeType, setSelectedNodeType] = useState<string>('All');
   const [searchTerm, setSearchTerm] = useState<string>('');
-  const [selectedNodeId, setSelectedNodeId] = useState<string | null>('node-suspect-1');
+  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
 
   // Zoom & Pan Canvas state
@@ -372,7 +295,7 @@ export const OfficerSuspectNetwork: React.FC = () => {
   const [newNodeType, setNewNodeType] = useState<NodeType>('Phone Number');
   const [newNodeSubtext, setNewNodeSubtext] = useState('');
   const [newNodeRisk, setNewNodeRisk] = useState<'Critical' | 'High' | 'Medium' | 'Low'>('High');
-  const [newNodeConnectTo, setNewNodeConnectTo] = useState<string>('node-suspect-1');
+  const [newNodeConnectTo, setNewNodeConnectTo] = useState<string>(() => nodes[0]?.id || '');
 
   // Copy Feedback state
   const [copiedText, setCopiedText] = useState<string | null>(null);

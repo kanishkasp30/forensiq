@@ -1,24 +1,16 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { RoleBadge } from './StatusBadges';
 import { NotificationsPopover } from './Notifications';
 import { EmergencySOSModal } from './EmergencySOSModal';
 import { AIEvidenceModal } from './AIEvidenceModal';
-import { UserRole } from '../types';
 import { 
-  Shield, 
   Search, 
   Bell, 
   Sparkles, 
   PhoneCall, 
   Menu, 
   X, 
-  UserCheck, 
-  ShieldCheck, 
-  ChevronDown, 
   LogOut, 
-  ExternalLink,
-  Lock
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -26,25 +18,26 @@ export const Navbar: React.FC<{ onToggleMobileSidebar?: () => void; isMobileSide
   onToggleMobileSidebar,
   isMobileSidebarOpen
 }) => {
-  const { currentUser, currentRole, switchRole, notifications } = useApp();
+  const { currentUser, notifications, logoutUser } = useApp();
   const navigate = useNavigate();
 
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [sosOpen, setSosOpen] = useState(false);
   const [aiModalOpen, setAiModalOpen] = useState(false);
-  const [roleMenuOpen, setRoleMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [globalSearch, setGlobalSearch] = useState('');
 
   const unreadNotifications = notifications.filter(n => !n.read).length;
 
-  const handleRoleChange = (role: UserRole) => {
-    switchRole(role);
-    setRoleMenuOpen(false);
-    if (role === 'victim') navigate('/victim');
-    else if (role === 'officer') navigate('/officer');
-    else if (role === 'admin') navigate('/admin');
+  const handleLogout = async () => {
+    setUserMenuOpen(false);
+    await logoutUser();
+    navigate('/login');
   };
+
+  if (!currentUser) {
+    return null;
+  }
 
   return (
     <>
@@ -64,7 +57,7 @@ export const Navbar: React.FC<{ onToggleMobileSidebar?: () => void; isMobileSide
             )}
 
             <div 
-              onClick={() => navigate('/')} 
+              onClick={() => navigate(`/${currentUser.role}`)} 
               className="flex items-center gap-3 cursor-pointer group"
             >
               <div className="w-8 h-8 bg-cyan-600 rounded flex items-center justify-center text-white font-bold shadow-lg shadow-cyan-950/60 border border-cyan-400/30 group-hover:bg-cyan-500 transition-colors">
@@ -99,64 +92,6 @@ export const Navbar: React.FC<{ onToggleMobileSidebar?: () => void; isMobileSide
 
           {/* Right Action Controls */}
           <div className="flex items-center gap-2 sm:gap-3">
-            
-            {/* Quick Role Portal Switcher */}
-            <div className="relative">
-              <button
-                onClick={() => setRoleMenuOpen(!roleMenuOpen)}
-                className="px-2.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-850 border border-slate-800 text-xs font-medium text-slate-200 flex items-center gap-1.5 transition-colors cursor-pointer"
-                title="Switch Portal Role View"
-              >
-                <RoleBadge role={currentRole} />
-                <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
-              </button>
-
-              {roleMenuOpen && (
-                <div className="absolute right-0 mt-2 w-56 bg-slate-900 border border-slate-800 rounded-xl shadow-xl z-50 p-1 space-y-0.5">
-                  <div className="px-3 py-1.5 text-[11px] font-mono text-slate-500 uppercase tracking-wider border-b border-slate-800">
-                    Select Active Portal View
-                  </div>
-                  <button
-                    onClick={() => handleRoleChange('victim')}
-                    className={`w-full px-3 py-2 text-left rounded-lg text-xs font-medium flex items-center justify-between ${
-                      currentRole === 'victim' ? 'bg-indigo-950 text-indigo-300 font-bold' : 'text-slate-300 hover:bg-slate-800'
-                    }`}
-                  >
-                    <span className="flex items-center gap-2">
-                      <UserCheck className="w-4 h-4 text-indigo-400" />
-                      Victim Portal
-                    </span>
-                    {currentRole === 'victim' && <span className="w-2 h-2 rounded-full bg-indigo-400" />}
-                  </button>
-
-                  <button
-                    onClick={() => handleRoleChange('officer')}
-                    className={`w-full px-3 py-2 text-left rounded-lg text-xs font-medium flex items-center justify-between ${
-                      currentRole === 'officer' ? 'bg-cyan-950 text-cyan-300 font-bold' : 'text-slate-300 hover:bg-slate-800'
-                    }`}
-                  >
-                    <span className="flex items-center gap-2">
-                      <ShieldCheck className="w-4 h-4 text-cyan-400" />
-                      Cybercrime Officer
-                    </span>
-                    {currentRole === 'officer' && <span className="w-2 h-2 rounded-full bg-cyan-400" />}
-                  </button>
-
-                  <button
-                    onClick={() => handleRoleChange('admin')}
-                    className={`w-full px-3 py-2 text-left rounded-lg text-xs font-medium flex items-center justify-between ${
-                      currentRole === 'admin' ? 'bg-purple-950 text-purple-300 font-bold' : 'text-slate-300 hover:bg-slate-800'
-                    }`}
-                  >
-                    <span className="flex items-center gap-2">
-                      <Shield className="w-4 h-4 text-purple-400" />
-                      Administrator Command
-                    </span>
-                    {currentRole === 'admin' && <span className="w-2 h-2 rounded-full bg-purple-400" />}
-                  </button>
-                </div>
-              )}
-            </div>
 
             {/* AI Evidence Tool Trigger Button */}
             <button
@@ -205,11 +140,17 @@ export const Navbar: React.FC<{ onToggleMobileSidebar?: () => void; isMobileSide
                 onClick={() => setUserMenuOpen(!userMenuOpen)}
                 className="flex items-center gap-2 p-1 rounded-lg hover:bg-slate-900 transition-colors cursor-pointer"
               >
-                <img
-                  src={currentUser.avatarUrl}
-                  alt={currentUser.name}
-                  className="w-8 h-8 rounded-lg object-cover border border-cyan-500/40"
-                />
+               {currentUser.avatarUrl ? (
+                  <img
+                    src={currentUser.avatarUrl}
+                    alt={currentUser.name}
+                    className="w-8 h-8 rounded-lg object-cover border border-cyan-500/40"
+                  />
+                ) : (
+                  <div className="w-8 h-8 rounded-lg bg-cyan-600 border border-cyan-500/40 flex items-center justify-center text-white text-xs font-bold">
+                    {currentUser.name.charAt(0).toUpperCase()}
+                  </div>
+                )}
               </button>
 
               {userMenuOpen && (
@@ -226,18 +167,11 @@ export const Navbar: React.FC<{ onToggleMobileSidebar?: () => void; isMobileSide
 
                   <div className="space-y-1 text-xs">
                     <button
-                      onClick={() => { setUserMenuOpen(false); navigate('/roles'); }}
-                      className="w-full text-left px-2 py-1.5 text-slate-300 hover:bg-slate-800 rounded-md flex items-center gap-2"
-                    >
-                      <ExternalLink className="w-3.5 h-3.5 text-cyan-400" />
-                      Role Matrix Portal
-                    </button>
-                    <button
-                      onClick={() => { setUserMenuOpen(false); navigate('/login'); }}
+                      onClick={handleLogout}
                       className="w-full text-left px-2 py-1.5 text-red-400 hover:bg-slate-800 rounded-md flex items-center gap-2"
                     >
                       <LogOut className="w-3.5 h-3.5" />
-                      Sign Out / Switch Session
+                      Sign Out
                     </button>
                   </div>
                 </div>

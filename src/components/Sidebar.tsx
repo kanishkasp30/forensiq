@@ -60,20 +60,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpenMobile, onCloseMobile })
           { label: 'Evidence Vault', path: '/officer/evidence-vault', icon: <FolderLock className="w-4 h-4 text-emerald-400" /> },
           { label: 'AI Analysis', path: '/officer/ai-analysis', icon: <Sparkles className="w-4 h-4 text-cyan-400" /> },
           { label: 'Timeline', path: '/officer/timeline', icon: <Clock className="w-4 h-4 text-indigo-400" /> },
-          { label: 'Suspect Network', path: '/officer/suspects', icon: <Users className="w-4 h-4 text-amber-400" /> },
           { label: 'Reports', path: '/officer/reports', icon: <BarChart3 className="w-4 h-4 text-purple-400" /> },
           { label: 'Notifications', path: '/officer/notifications', icon: <Bell className="w-4 h-4 text-amber-400" />, badge: unreadNotifs ? `${unreadNotifs} new` : undefined, badgeColor: 'bg-amber-500/15 text-amber-400 border-amber-500/30' },
           { label: 'Profile', path: '/officer/profile', icon: <User className="w-4 h-4 text-blue-400" /> },
           { label: 'Logout', path: '/login', icon: <LogOut className="w-4 h-4 text-rose-400" /> },
         ];
-      case 'admin':
-        return [
-          { label: 'Command Center', path: '/admin', icon: <LayoutDashboard className="w-4 h-4" /> },
-          { label: 'Officer Workload Manager', path: '/admin/workload', icon: <Users className="w-4 h-4" /> },
-          { label: 'Threat Intelligence Feed', path: '/admin/threats', icon: <Globe className="w-4 h-4" /> },
-          { label: 'Role Access Control (RBAC)', path: '/admin/rbac', icon: <Lock className="w-4 h-4" /> },
-          { label: 'Audit Logs & System Health', path: '/admin/audit', icon: <Activity className="w-4 h-4" /> },
-        ];
+      
     }
   };
 
@@ -95,10 +87,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpenMobile, onCloseMobile })
         <div className="flex items-center gap-2">
           {currentRole === 'victim' && <UserCheck className="w-4 h-4 text-indigo-400" />}
           {currentRole === 'officer' && <ShieldCheck className="w-4 h-4 text-cyan-400" />}
-          {currentRole === 'admin' && <Cpu className="w-4 h-4 text-purple-400" />}
           <span className="text-sm font-bold text-white font-serif italic capitalize">
-            {currentRole === 'victim' ? 'Victim Assistance' : currentRole === 'officer' ? 'Cybercrime Bureau' : 'Command Hub'}
-          </span>
+{currentRole === 'victim' ? 'Victim Assistance' : 'Cybercrime Bureau'}          </span>
         </div>
       </div>
 
@@ -154,15 +144,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpenMobile, onCloseMobile })
           <span>Platform Overview</span>
         </button>
 
-        <button
-          onClick={() => navTo('/roles')}
-          className={`w-full px-3.5 py-2 rounded-lg text-xs font-medium flex items-center gap-3 transition-colors ${
-            location.pathname === '/roles' ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
-          }`}
-        >
-          <Layers className="w-4 h-4 text-slate-500" />
-          <span>Role Portal Matrix</span>
-        </button>
+        
       </nav>
 
       {/* Footer System Network Integrity Banner */}

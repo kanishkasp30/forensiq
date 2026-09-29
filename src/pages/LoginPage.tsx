@@ -81,7 +81,7 @@ export const LoginPage: React.FC = () => {
     }
   };
 
-  const roleStyles: Record<UserRole, string> = {
+  const roleStyles: Partial<Record<UserRole, string>> = {
     victim:
       selectedRole === 'victim'
         ? 'border-emerald-500/70 bg-emerald-500/10 text-emerald-300'
@@ -90,11 +90,6 @@ export const LoginPage: React.FC = () => {
     officer:
       selectedRole === 'officer'
         ? 'border-cyan-500/70 bg-cyan-500/10 text-cyan-300'
-        : 'border-slate-800 bg-slate-950/70 text-slate-400',
-
-    admin:
-      selectedRole === 'admin'
-        ? 'border-violet-500/70 bg-violet-500/10 text-violet-300'
         : 'border-slate-800 bg-slate-950/70 text-slate-400',
   };
 
@@ -150,7 +145,7 @@ export const LoginPage: React.FC = () => {
                 Select account type
               </label>
 
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-2 gap-2">
 
                 {/* CITIZEN */}
                 <button
@@ -178,18 +173,7 @@ export const LoginPage: React.FC = () => {
                   </span>
                 </button>
 
-                {/* ADMIN */}
-                <button
-                  type="button"
-                  onClick={() => selectRole('admin')}
-                  className={`border rounded-xl p-3 transition-all ${roleStyles.admin}`}
-                >
-                  <Shield className="w-4 h-4 mx-auto mb-1" />
-
-                  <span className="text-xs font-medium">
-                    Admin
-                  </span>
-                </button>
+                
 
               </div>
             </div>

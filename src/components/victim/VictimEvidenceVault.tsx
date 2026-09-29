@@ -202,7 +202,7 @@ export const VictimEvidenceVault: React.FC = () => {
             <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
               <div className="flex justify-between text-slate-400">
                 <span>Case Reference:</span>
-                <strong className="text-cyan-400 font-mono">{viewingFile.caseId}</strong>
+<strong className="text-cyan-400 font-mono">{selectedCaseId}</strong>
               </div>
               <div className="flex justify-between text-slate-400">
                 <span>Uploaded By:</span>

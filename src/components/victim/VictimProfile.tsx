@@ -11,7 +11,7 @@ import {
   Bell, 
   FileText, 
   FolderLock, 
-  DollarSign, 
+  IndianRupee, 
   CheckCircle2, 
   Copy, 
   Check,
@@ -56,7 +56,7 @@ export const VictimProfile: React.FC = () => {
             <div className="space-y-1">
               <div className="flex items-center gap-2">
                 <h1 className="text-2xl font-serif italic text-white">{currentUser.name}</h1>
-                <VerificationBadge isVerified={currentUser.isVerified ?? true} />
+                <VerificationBadge status={currentUser.isVerified ? 'Verified' : 'Pending'} />
               </div>
               <p className="text-xs text-slate-400 font-mono">{currentUser.email}</p>
               <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 text-[11px] font-mono border border-cyan-500/20">
@@ -75,8 +75,7 @@ export const VictimProfile: React.FC = () => {
           </div>
           <div className="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800">
             <span className="text-slate-500 uppercase font-mono text-[10px]">Total Recorded Loss</span>
-            <div className="text-lg font-bold text-rose-400 font-mono mt-0.5">${totalLoss.toLocaleString()}</div>
-          </div>
+<div className="text-lg font-bold text-rose-400 font-mono mt-0.5">₹{totalLoss.toLocaleString('en-IN')}</div>          </div>
           <div className="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800">
             <span className="text-slate-500 uppercase font-mono text-[10px]">Vault Evidence Stored</span>
             <div className="text-lg font-bold text-emerald-400 font-mono mt-0.5">{totalEvidenceFiles} Files</div>
@@ -109,7 +108,7 @@ export const VictimProfile: React.FC = () => {
             </div>
             <div>
               <span className="text-slate-500 block text-[10px] uppercase font-mono">Government ID Number</span>
-              <span className="font-mono text-cyan-400">{currentUser.govtId || 'US-GOV-984214-X'}</span>
+              <span className="font-mono text-cyan-400">{currentUser.govtId || 'Not provided'}</span>
             </div>
             <div>
               <span className="text-slate-500 block text-[10px] uppercase font-mono">Physical Address</span>
